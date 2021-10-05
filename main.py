@@ -1,16 +1,41 @@
-# This is a sample Python script.
+import requests
+import os
+from bs4 import BeautifulSoup
 
-# Press Shift+F10 to execute it or replace it with your code.
-# Press Double Shift to search everywhere for classes, files, tool windows, actions, and settings.
+def find_name(url):
+    '''this function find name in url'''
 
+    name = url.split('?')[0]
+    name = name.split('/')[-1]
+    return name
 
-def print_hi(name):
-    # Use a breakpoint in the code line below to debug your script.
-    print(f'Hi, {name}')  # Press Ctrl+F8 to toggle the breakpoint.
+def get_categories_url(url):
+    '''
+    This function find all url categories companies
 
+    return: dict with list url categories
+    '''
+    headers = {
+        'Accept': '*/*',
+        "User-Agent": "Mozilla/5.0 (X11; Ubuntu; Linux x86_64; rv:92.0) Gecko/20100101 Firefox/92.0"
+    }
 
-# Press the green button in the gutter to run the script.
-if __name__ == '__main__':
-    print_hi('PyCharm')
+    reg = requests.get(url, headers=headers)
 
-# See PyCharm help at https://www.jetbrains.com/help/pycharm/
+    with open('obraz/categories.html', 'w') as file:
+        file.write(reg.text)
+
+    with open('obraz/categories.html') as file:
+        src = file.read()
+
+    soup = BeautifulSoup(src, 'lxml')
+    articles = soup.find_all("a", class_='employers-company__item')
+
+    category_companyes_urls = []
+    for article in articles:
+        project_url = "https://rabota.by" + article.get('href') + '&vacanciesRequired=true'
+        category_companyes_urls.append(project_url)
+
+    return category_companyes_urls
+
+get_categories_url("https://rabota.by/employers_company?area=16")
